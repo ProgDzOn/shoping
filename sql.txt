@@ -1,0 +1,59 @@
+CREATE DATABASE ecommerce_store;
+USE ecommerce_store;
+
+
+CREATE TABLE products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    quantity_available INT NOT NULL,
+    image_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    customer_firstname VARCHAR(255) NOT NULL,
+    customer_lastname VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    state VARCHAR(100) NOT NULL,
+    order_status VARCHAR(50) DEFAULT 'pending',
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+CREATE TABLE reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    customer_name VARCHAR(255) NOT NULL,
+    rating INT CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT,
+    review_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+CREATE TABLE discounts (
+    discount_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    discount_price DECIMAL(10, 2),
+    discount_end_date DATE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+CREATE TABLE loyalty_points (
+    loyalty_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT,
+    points_balance INT DEFAULT 0,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE faq (
+    faq_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+

@@ -1,0 +1,429 @@
+
+==db_connection.php
+<?php
+$servername = "localhost";
+$username = "root"; // استخدم اسم المستخدم المناسب لقاعدة البيانات الخاصة بك
+$password = ""; // ضع كلمة مرور قاعدة البيانات الخاصة بك إذا كانت موجودة
+$dbname = "ecommerce_store";
+
+// إنشاء اتصال
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// التحقق من الاتصال
+if ($conn->connect_error) {
+    die("فشل الاتصال: " . $conn->connect_error);
+}
+echo "تم الاتصال بنجاح";
+?>
+
+===index.php
+<?php
+include 'db_connection.php';
+
+// استعلام لجلب المنتجات
+$sql = "SELECT * FROM products";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    // عرض المنتجات
+    while($row = $result->fetch_assoc()) {
+        echo "<div>";
+        echo "<h2>" . $row["product_name"] . "</h2>";
+        echo "<p>" . $row["description"] . "</p>";
+        echo "<p>السعر: " . $row["price"] . " دولار</p>";
+        echo "<p>الكمية المتاحة: " . $row["quantity_available"] . "</p>";
+        echo "<img src='" . $row["image_url"] . "' alt='صورة المنتج' width='200' height='200'>";
+        echo "<a href='order.php?product_id=" . $row["product_id"] . "'>اشتري الآن</a>";
+        echo "</div>";
+    }
+} else {
+    echo "لا توجد منتجات متاحة";
+}
+
+$conn->close();
+?>
+
+===order.php
+<?php
+include 'db_connection.php';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $product_id = $_POST['product_id'];
+    $customer_firstname = $_POST['customer_firstname'];
+    $customer_lastname = $_POST['customer_lastname'];
+    $phone_number = $_POST['phone_number'];
+    $state = $_POST['state'];
+
+    // إدراج الطلب في قاعدة البيانات
+    $sql = "INSERT INTO orders (product_id, customer_firstname, customer_lastname, phone_number, state) 
+            VALUES ('$product_id', '$customer_firstname', '$customer_lastname', '$phone_number', '$state')";
+
+    if ($conn->query($sql) === TRUE) {
+        echo "تم تقديم الطلب بنجاح";
+    } else {
+        echo "حدث خطأ: " . $sql . "<br>" . $conn->error;
+    }
+
+    $conn->close();
+} else {
+    $product_id = $_GET['product_id'];
+?>
+
+<form method="POST" action="order.php">
+    <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
+    <label>الاسم:</label><br>
+    <input type="text" name="customer_firstname" required><br>
+    <label>اللقب:</label><br>
+    <input type="text" name="customer_lastname" required><br>
+    <label>رقم الهاتف:</label><br>
+    <input type="text" name="phone_number" required><br>
+    <label>الولاية:</label><br>
+    <input type="text" name="state" required><br>
+    <input type="submit" value="تأكيد الطلب">
+</form>
+
+<?php
+}
+?>
+
+=== style.css
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.product-grid div {
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.product-grid div:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+img {
+    max-width: 100%;
+    border-radius: 5px;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin: 0 0 10px;
+}
+
+p {
+    color: #333;
+}
+
+a {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+a:hover {
+    background-color: #45a049;
+}
+
+
+==تحسين صفحة عرض المنتجات index.php:
+<?php
+include 'db_connection.php';
+?>
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المتجر الإلكتروني</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>مرحبا بكم في متجرنا الإلكتروني</h1>
+</header>
+
+<div class="product-grid">
+<?php
+// استعلام لجلب المنتجات
+$sql = "SELECT * FROM products";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    // عرض المنتجات
+    while($row = $result->fetch_assoc()) {
+        echo "<div>";
+        echo "<img src='" . $row["image_url"] . "' alt='صورة المنتج'>";
+        echo "<h2>" . $row["product_name"] . "</h2>";
+        echo "<p>" . $row["description"] . "</p>";
+        echo "<p>السعر: " . $row["price"] . " دولار</p>";
+        echo "<p>الكمية المتاحة: " . $row["quantity_available"] . "</p>";
+        echo "<a href='order.php?product_id=" . $row["product_id"] . "'>اشتري الآن</a>";
+        echo "</div>";
+    }
+} else {
+    echo "<p>لا توجد منتجات متاحة حاليا</p>";
+}
+
+$conn->close();
+?>
+</div>
+
+</body>
+</html>
+
+==تحسين صفحة الطلبات order.php:
+<?php
+include 'db_connection.php';
+?>
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طلب المنتج</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>تأكيد طلب المنتج</h1>
+</header>
+
+<?php
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $product_id = $_POST['product_id'];
+    $customer_firstname = $_POST['customer_firstname'];
+    $customer_lastname = $_POST['customer_lastname'];
+    $phone_number = $_POST['phone_number'];
+    $state = $_POST['state'];
+
+    // إدراج الطلب في قاعدة البيانات
+    $sql = "INSERT INTO orders (product_id, customer_firstname, customer_lastname, phone_number, state) 
+            VALUES ('$product_id', '$customer_firstname', '$customer_lastname', '$phone_number', '$state')";
+
+    if ($conn->query($sql) === TRUE) {
+        echo "<p>تم تقديم الطلب بنجاح!</p>";
+    } else {
+        echo "<p>حدث خطأ: " . $conn->error . "</p>";
+    }
+
+    $conn->close();
+} else {
+    $product_id = $_GET['product_id'];
+?>
+
+<form method="POST" action="order.php" class="order-form">
+    <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
+    <label>الاسم:</label><br>
+    <input type="text" name="customer_firstname" required><br>
+    <label>اللقب:</label><br>
+    <input type="text" name="customer_lastname" required><br>
+    <label>رقم الهاتف:</label><br>
+    <input type="text" name="phone_number" required><br>
+    <label>الولاية:</label><br>
+    <input type="text" name="state" required><br>
+    <input type="submit" value="تأكيد الطلب">
+</form>
+
+<?php
+}
+?>
+
+</body>
+</html>
+
+
+==ملف success_notification.js:
+
+// هذه الدالة لعرض رسالة النجاح عند إتمام الطلب
+function showSuccessNotification(message) {
+    const notification = document.createElement('div');
+    notification.classList.add('success-notification');
+    notification.innerText = message;
+    
+    document.body.appendChild(notification);
+    
+    // إزالة الرسالة بعد 3 ثوانٍ
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+==تعديل في order.php:
+
+<?php
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // البيانات الخاصة بالطلب
+    $product_id = $_POST['product_id'];
+    $customer_firstname = $_POST['customer_firstname'];
+    $customer_lastname = $_POST['customer_lastname'];
+    $phone_number = $_POST['phone_number'];
+    $state = $_POST['state'];
+
+    // إدراج الطلب في قاعدة البيانات
+    $sql = "INSERT INTO orders (product_id, customer_firstname, customer_lastname, phone_number, state) 
+            VALUES ('$product_id', '$customer_firstname', '$customer_lastname', '$phone_number', '$state')";
+
+    if ($conn->query($sql) === TRUE) {
+        echo "<script>showSuccessNotification('تم تقديم الطلب بنجاح!');</script>";
+    } else {
+        echo "<p>حدث خطأ: " . $conn->error . "</p>";
+    }
+
+    $conn->close();
+}
+?>
+
+===تعديل style.css (إضافة تنبيه النجاح):
+.success-notification {
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+==تعديل index.php:
+
+<?php
+include 'db_connection.php';
+?>
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المتجر الإلكتروني</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="cart.js"></script>
+</head>
+<body>
+
+<header>
+    <h1>مرحبا بكم في متجرنا الإلكتروني</h1>
+    <a href="cart.php">عرض سلة التسوق</a>
+</header>
+
+<div class="product-grid">
+<?php
+// استعلام لجلب المنتجات
+$sql = "SELECT * FROM products";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    // عرض المنتجات
+    while($row = $result->fetch_assoc()) {
+        echo "<div>";
+        echo "<img src='" . $row["image_url"] . "' alt='صورة المنتج'>";
+        echo "<h2>" . $row["product_name"] . "</h2>";
+        echo "<p>" . $row["description"] . "</p>";
+        echo "<p>السعر: " . $row["price"] . " دولار</p>";
+        echo "<p>الكمية المتاحة: " . $row["quantity_available"] . "</p>";
+        echo "<button onclick='addToCart(" . $row["product_id"] . ")'>أضف إلى السلة</button>";
+        echo "</div>";
+    }
+} else {
+    echo "<p>لا توجد منتجات متاحة حاليا</p>";
+}
+
+$conn->close();
+?>
+</div>
+
+</body>
+</html>
+
+
+==
+ب. إدارة سلة التسوق في JavaScript:
+ملف cart.js:
+
+let cart = [];
+
+// إضافة المنتج إلى السلة
+function addToCart(productId) {
+    cart.push(productId);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    alert('تمت إضافة المنتج إلى السلة');
+}
+
+// جلب المنتجات من السلة
+function getCart() {
+    return JSON.parse(localStorage.getItem('cart')) || [];
+}
+
+// عرض المنتجات في السلة
+function showCart() {
+    const cartItems = getCart();
+    if (cartItems.length === 0) {
+        alert('السلة فارغة');
+    } else {
+        // عرض المنتجات المخزنة في السلة
+        console.log(cartItems);
+    }
+}
+
+
+==ملف cart.php:
+
+<?php
+include 'db_connection.php';
+
+$cart = isset($_COOKIE['cart']) ? json_decode($_COOKIE['cart'], true) : [];
+
+if (count($cart) > 0) {
+    $ids = implode(",", $cart);
+    $sql = "SELECT * FROM products WHERE product_id IN ($ids)";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        echo "<h1>سلة التسوق</h1>";
+        echo "<ul>";
+        while($row = $result->fetch_assoc()) {
+            echo "<li>" . $row["product_name"] . " - " . $row["price"] . " دولار</li>";
+        }
+        echo "</ul>";
+    } else {
+        echo "السلة فارغة";
+    }
+} else {
+    echo "السلة فارغة";
+}
+
+$conn->close();
+?>
+
+==

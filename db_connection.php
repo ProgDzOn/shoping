@@ -1,16 +1,15 @@
 <?php
-// إعدادات الاتصال بقاعدة البيانات
-$host = 'localhost'; // أو إذا كنت تستخدم خادمًا عن بُعد، ضع عنوانه هنا
-$username = 'root'; // اسم المستخدم لقاعدة البيانات
-$password = ''; // كلمة المرور الخاصة بقاعدة البيانات (غالبًا تكون فارغة في XAMPP أو WAMP)
-$database = 'real_estate_db'; // اسم قاعدة البيانات
+$servername = "localhost";
+$username = "root"; // اسم المستخدم لقاعدة البيانات
+$password = ""; // كلمة مرور قاعدة البيانات (إذا كانت موجودة)
+$dbname = "ecommerce_store"; // قاعدة البيانات الخاصة بك
 
-// إنشاء الاتصال بقاعدة البيانات
-$conn = new mysqli($host, $username, $password, $database);
+// إنشاء الاتصال
+$conn = new mysqli($servername, $username, $password, $dbname);
 
 // التحقق من الاتصال
 if ($conn->connect_error) {
-    die("فشل الاتصال بقاعدة البيانات: " . $conn->connect_error);
+    die("فشل الاتصال: " . $conn->connect_error);
 }
+// echo "تم الاتصال بنجاح";  // هذه الجملة يمكن حذفها لتجنب ظهور الرسالة
 ?>
-
